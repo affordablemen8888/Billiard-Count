@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户仪表盘</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        /* 横屏手机容器 */
+        .phone-container {
+            width: 100%;
+            max-width: 812px; /* iPhone X 横屏宽度 */
+            height: auto;
+            min-height: 375px;
+            background-color: white;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            border: 10px solid #333;
+        }
+        
+        /* 修复iOS Safari的溢出问题 */
+        @supports (-webkit-touch-callout: none) {
+            .phone-container {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* 模拟顶部状态栏 */
+        .status-bar {
+            height: 20px;
+            background-color: #333;
+            width: 100%;
+            flex-shrink: 0;
+        }
+        
+        /* 主内容区 */
+        .content {
+            min-height: calc(100% - 20px);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        /* 顶部欢迎区 */
+        .welcome-section {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .welcome-section h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        /* 主要内容区布局 */
+        .dashboard-content {
+            display: flex;
+            flex: 1;
+            gap: 15px;
+            flex-direction: column;
+        }
+        
+        /* 左侧区域 */
+        .left-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* 右侧区域 */
+        .right-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* 卡片通用样式 */
+        .card {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        
+        /* 组织信息卡片 */
+        .organization-card {
+            flex: 1;
+        }
+        
+        .organization-card h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #6a11cb;
+            padding-bottom: 5px;
+        }
+        
+        /* 战绩信息卡片 */
+        .statistics-card {
+            flex: 2;
+        }
+        
+        .statistics-card h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #6a11cb;
+            padding-bottom: 5px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .statistics-info {
+            margin-top: 10px;
+            background: linear-gradient(to bottom, rgba(230, 240, 255, 0.3), rgba(210, 220, 245, 0.3));
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .statistics-info p {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(106, 17, 203, 0.1);
+        }
+        
+        .statistics-info p:last-child {
+            border-bottom: none;
+        }
+        
+        .statistics-info p span:first-child {
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .statistics-info p span:last-child {
+            font-weight: 600;
+            color: #2575fc;
+        }
+        
+        /* 按钮卡片 */
+        .button-card {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* 按钮样式 */
+        .action-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+            text-align: center;
+        }
+        
+        .action-button:hover {
+            background: linear-gradient(to right, #1e63d0, #5e0fb5);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(37, 117, 252, 0.4);
+        }
+        
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(37, 117, 252, 0.3);
+        }
+        
+        /* 模态窗口样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 350px;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .modal-header p {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 22px;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
+            background: #fff;
+        }
+        
+        /* 消息提示样式 */
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .message.error {
+            background-color: #f44336;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+
+        @media (min-width: 768px) {
+            /* 在平板和桌面上使用水平布局 */
+            .dashboard-content {
+                flex-direction: row;
+            }
+            
+            .phone-container {
+                height: auto;
+                min-height: 375px;
+            }
+            
+            .left-section, .right-section {
+                width: 50%;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            /* 在手机上使用垂直布局 */
+            body {
+                padding: 10px;
+            }
+            
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .phone-container {
+                border-width: 5px;
+                border-radius: 20px;
+            }
+            
+            .welcome-section {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .welcome-section h1 {
+                font-size: 18px;
+            }
+            
+            .organization-card h2,
+            .statistics-card h2 {
+                font-size: 16px;
+            }
+            
+            .card {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .action-button {
+                padding: 12px;
+            }
+            
+            .left-section, .right-section {
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="status-bar"></div>
+        <div class="content">
+            <div class="welcome-section">
+                <h1>欢迎回来: "<span id="username">用户名</span>"</h1>
+            </div>
+            
+            <div class="dashboard-content">
+                <div class="left-section">
+                    <div class="card organization-card">
+                        <h2>组织名称: "<span id="organization">xxx</span>"</h2>
+                    </div>
+                    
+                    <div class="card statistics-card card-shadow">
+                        <h2>个人战绩</h2>
+                        <div class="statistics-info">
+                            <p><span>总场次</span><span id="matches">0</span></p>
+                            <p><span>胜利场次</span><span id="wins">0</span></p>
+                            <p><span>失败场次</span><span id="losses">0</span></p>
+                            <p><span>胜利比赛</span><span id="win_matches">0</span></p>
+                            <p><span>失败比赛</span><span id="loss_matches">0</span></p>
+                            <p><span>MVP次数</span><span id="mvp_count">0</span></p>
+                            <p><span>总得分</span><span id="score_for">0</span></p>
+                            <p><span>总失分</span><span id="score_against">0</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="right-section">
+                    <div class="card button-card">
+                        <button class="action-button" id="create-match">发起比赛</button>
+                    </div>
+                    
+                    <div class="card button-card">
+                        <button class="action-button" id="join-match">观看比赛</button>
+                    </div>
+                    
+                    <div class="card button-card">
+                        <button class="action-button" id="logout-button">退出登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 组织注册模态窗口 -->
+    <div class="modal" id="organization-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2>加入组织</h2>
+                <p>请输入您要加入的组织名称</p>
+            </div>
+            <form id="organization-form">
+                <div class="form-group">
+                    <label for="organization-name">组织名称</label>
+                    <input type="text" id="organization-name" placeholder="请输入组织名称" autocomplete="off">
+                </div>
+                <button type="submit" class="action-button">确认</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+
+    <!-- 引入数据库脚本 -->
+    <script src="db.js"></script>
+    
+    <script>
+        // 获取UI元素
+        const usernameElement = document.getElementById('username');
+        const organizationElement = document.getElementById('organization');
+        const matchesElement = document.getElementById('matches');
+        const winsElement = document.getElementById('wins');
+        const lossesElement = document.getElementById('losses');
+        const winMatchesElement = document.getElementById('win_matches');
+        const lossMatchesElement = document.getElementById('loss_matches');
+        const mvpCountElement = document.getElementById('mvp_count');
+        
+        const createMatchButton = document.getElementById('create-match');
+        const joinMatchButton = document.getElementById('join-match');
+        const logoutButton = document.getElementById('logout-button');
+        
+        const organizationModal = document.getElementById('organization-modal');
+        const closeModalButton = document.getElementById('close-modal');
+        const organizationForm = document.getElementById('organization-form');
+        const organizationNameInput = document.getElementById('organization-name');
+        
+        const messageElement = document.getElementById('message');
+        
+        // 初始化函数和事件监听器
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 初始化数据库
+            try {
+                await UserDB.init();
+            } catch (error) {
+                console.error('数据库初始化失败:', error);
+                showMessage('数据库连接失败，请刷新页面重试', true);
+                return;
+            }
+            
+            const user = await getCurrentUser();
+            
+            if (!user) {
+                // 如果没有登录用户，重定向回登录页
+                window.location.href = 'login_prototype.html';
+                return;
+            }
+            
+            // 检查用户是否有组织
+            if (!user.organization) {
+                // 显示组织注册模态窗口
+                organizationModal.classList.add('active');
+                organizationElement.textContent = '未加入';
+            } else {
+                organizationElement.textContent = user.organization;
+            }
+            
+            // 设置用户统计信息
+            await setUserStatistics();
+            
+            // 其他初始化代码
+            resetModalStatus();
+            addEventListeners();
+            setupRankingButtons();
+        });
+        
+        // 获取当前用户数据
+        async function getCurrentUser() {
+            // 从 sessionStorage 获取当前用户数据
+            const userData = JSON.parse(sessionStorage.getItem('currentUser'));
+            
+            if (!userData) {
+                // 如果没有登录数据，返回 null
+                return null;
+            }
+            
+            try {
+                // 从数据库获取最新的用户数据
+                const latestUserData = await UserDB.getUser(userData.username);
+                
+                if (latestUserData) {
+                    // 如果获取成功，使用最新数据并更新sessionStorage
+                    sessionStorage.setItem('currentUser', JSON.stringify(latestUserData));
+                    console.log('已更新用户数据:', latestUserData);
+                    return latestUserData;
+                } else {
+                    // 如果获取失败，使用会话中的数据
+                    return userData;
+                }
+            } catch (error) {
+                console.error('获取用户数据时出错:', error);
+                // 出错时使用会话中的数据
+                return userData;
+            }
+        }
+        
+        // 设置用户统计信息
+        async function setUserStatistics() {
+            const user = await getCurrentUser();
+            
+            if (user) {
+                // 设置用户名
+                usernameElement.textContent = user.username;
+                
+                // 设置统计数据
+                matchesElement.textContent = user.matches || 0;
+                winsElement.textContent = user.wins || 0;
+                lossesElement.textContent = user.losses || 0;
+                winMatchesElement.textContent = user.winMatches || 0;
+                lossMatchesElement.textContent = user.lossMatches || 0;
+                mvpCountElement.textContent = user.mvpCount || 0;
+                
+                // 设置新增统计数据
+                const scoreForElement = document.getElementById('score_for');
+                const scoreAgainstElement = document.getElementById('score_against');
+                
+                if (scoreForElement) {
+                    scoreForElement.textContent = user.scoreFor || 0;
+                }
+                
+                if (scoreAgainstElement) {
+                    scoreAgainstElement.textContent = user.scoreAgainst || 0;
+                }
+            }
+        }
+        
+        // 重置模态窗口状态
+        function resetModalStatus() {
+            // 关闭模态窗口按钮事件
+            if (closeModalButton) {
+                closeModalButton.addEventListener('click', () => {
+                    organizationModal.classList.remove('active');
+                });
+            }
+            
+            // 组织表单提交事件
+            if (organizationForm) {
+                organizationForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    
+                    const orgName = organizationNameInput.value.trim();
+                    if (!orgName) {
+                        showMessage('请输入组织名称', true);
+                        return;
+                    }
+                    
+                    try {
+                        const userData = await getCurrentUser();
+                        if (!userData) {
+                            showMessage('获取用户信息失败', true);
+                            return;
+                        }
+                        
+                        const updatedUser = {
+                            ...userData,
+                            organization: orgName
+                        };
+                        
+                        await UserDB.updateUser(updatedUser);
+                        
+                        // 更新会话存储
+                        sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                        
+                        // 更新界面
+                        organizationElement.textContent = orgName;
+                        organizationModal.classList.remove('active');
+                        
+                        showMessage('成功加入组织: ' + orgName);
+                    } catch (error) {
+                        console.error('更新组织失败:', error);
+                        showMessage('加入组织失败，请重试', true);
+                    }
+                });
+            }
+        }
+        
+        // 添加事件监听器
+        function addEventListeners() {
+            // 创建比赛按钮
+            if (createMatchButton) {
+                createMatchButton.addEventListener('click', () => {
+                    window.location.href = 'match.html?mode=create';
+                });
+            }
+            
+            // 加入比赛按钮
+            if (joinMatchButton) {
+                joinMatchButton.addEventListener('click', () => {
+                    window.location.href = 'match.html?mode=join';
+                });
+            }
+            
+            // 登出按钮
+            if (logoutButton) {
+                logoutButton.addEventListener('click', () => {
+                    // 清除会话存储
+                    sessionStorage.removeItem('currentUser');
+                    // 重定向到登录页
+                    window.location.href = 'login_prototype.html';
+                });
+            }
+        }
+        
+        // 设置排行榜按钮
+        function setupRankingButtons() {
+            const rankingNavLinks = document.querySelectorAll('.ranking-nav a');
+            const rankingTables = document.querySelectorAll('.ranking-table');
+            
+            rankingNavLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    
+                    // 移除所有活动类
+                    rankingNavLinks.forEach(item => item.classList.remove('active'));
+                    rankingTables.forEach(table => table.classList.remove('active'));
+                    
+                    // 添加活动类到当前选择的项目
+                    event.target.classList.add('active');
+                    
+                    // 显示相应的表格
+                    const targetId = event.target.getAttribute('data-target');
+                    const targetTable = document.getElementById(targetId);
+                    if (targetTable) {
+                        targetTable.classList.add('active');
+                    }
+                });
+            });
+        }
+        
+        // 显示消息
+        function showMessage(text, isError = false) {
+            if (!messageElement) return;
+            
+            messageElement.textContent = text;
+            messageElement.classList.add('active');
+            
+            if (isError) {
+                messageElement.classList.add('error');
+            } else {
+                messageElement.classList.remove('error');
+            }
+            
+            // 3秒后隐藏消息
+            setTimeout(() => {
+                messageElement.classList.remove('active');
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

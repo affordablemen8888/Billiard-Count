@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端登录页面原型</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        /* 移动端原型样式 */
+        .phone-container {
+            width: 375px;
+            height: 667px;
+            background-color: white;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            border: 10px solid #333;
+            flex-shrink: 0;
+        }
+        
+        .notch {
+            width: 150px;
+            height: 25px;
+            background-color: #333;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            z-index: 10;
+        }
+        
+        .login-container {
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .login-container::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            right: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .login-box {
+            width: 85%;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .login-logo img {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .login-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .login-header p {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 2px rgba(37, 117, 252, 0.2);
+            background: #fff;
+        }
+        
+        .form-group input::placeholder {
+            color: #aaa;
+        }
+        
+        .form-group .icon {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            color: #aaa;
+        }
+        
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+        
+        .remember-me input {
+            margin-right: 8px;
+            accent-color: #2575fc;
+        }
+        
+        .forgot-password a {
+            color: #2575fc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .forgot-password a:hover {
+            color: #6a11cb;
+            text-decoration: underline;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        
+        .login-button:hover {
+            background: linear-gradient(to right, #1e63d0, #5e0fb5);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(37, 117, 252, 0.4);
+        }
+        
+        .login-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(37, 117, 252, 0.3);
+        }
+        
+        /* 注册按钮 */
+        .register-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .register-link a {
+            color: #2575fc;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        .register-link a:hover {
+            color: #6a11cb;
+            text-decoration: underline;
+        }
+        
+        /* 模态窗口样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 350px;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .modal-header p {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 22px;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        /* 设计说明样式 */
+        .design-notes {
+            flex: 1;
+            padding: 30px;
+            background-color: white;
+            border-radius: 20px;
+            margin-left: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            height: 667px;
+            overflow-y: auto;
+        }
+        
+        .design-notes h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #6a11cb;
+            padding-bottom: 10px;
+        }
+        
+        .design-notes h3 {
+            font-size: 18px;
+            margin: 20px 0 10px;
+            color: #2575fc;
+        }
+        
+        .design-notes p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .design-notes ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        
+        .design-notes li {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .color-palette {
+            display: flex;
+            margin: 15px 0;
+        }
+        
+        .color-box {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .color-box::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .design-notes {
+                width: 375px;
+                margin-left: 0;
+                margin-top: 30px;
+            }
+        }
+        
+        /* 交互响应提示 */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+        
+        .login-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .login-message.error {
+            background-color: #f44336;
+        }
+
+        .login-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 移动端登录界面原型 -->
+        <div class="phone-container">
+            <div class="notch"></div>
+            <div class="login-container">
+                <div class="login-box">
+                    <div class="login-logo">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzAiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA3MCA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcwIiBoZWlnaHQ9IjcwIiByeD0iMTUiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcikiLz4KPHBhdGggZD0iTTIwLjgzMzMgMzVDMjAuODMzMyA0MC41MjMgMjUuMzEgNDUgMzAuODMzMyA0NUMzNi4zNTY3IDQ1IDQwLjgzMzMgNDAuNTIzIDQwLjgzMzMgMzVDNDAuODMzMyAyOS40NzcgMzYuMzU2NyAyNSAzMC44MzMzIDI1QzI1LjMxIDI1IDIwLjgzMzMgMjkuNDc3IDIwLjgzMzMgMzVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiLz4KPHBhdGggZD0iTTQ5LjE2NjcgMzVDNDkuMTY2NyA0MC41MjMgNDQuNjkgNDUgMzkuMTY2NyA0NUMzMy42NDMzIDQ1IDI5LjE2NjcgNDAuNTIzIDI5LjE2NjcgMzVDMjkuMTY2NyAyOS40NzcgMzMuNjQzMyAyNSAzOS4xNjY3IDI1QzQ0LjY5IDI1IDQ5LjE2NjcgMjkuNDc3IDQ5LjE2NjcgMzVaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhciIgeDE9IjAiIHkxPSIwIiB4Mj0iNzAiIHkyPSI3MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMjU3NUZDIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzZBMTFDQiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=" alt="Logo">
+                    </div>
+                    <div class="login-header">
+                        <h1>欢迎回来</h1>
+                        <p>请登录您的账号以继续</p>
+                    </div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" placeholder="请输入您的用户名" autocomplete="off">
+                            <span class="icon">👤</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" placeholder="请输入您的密码">
+                            <span class="icon">🔒</span>
+                        </div>
+                        <div class="remember-forgot">
+                            <div class="remember-me">
+                                <input type="checkbox" id="remember">
+                                <label for="remember">记住我</label>
+                            </div>
+                            <div class="forgot-password">
+                                <a href="#" id="forgot-password">忘记密码?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="login-button" id="login-button">登录</button>
+                    </form>
+                    <div class="register-link">
+                        <a href="#" id="register-link">注册新账号</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 设计说明 -->
+        <div class="design-notes">
+            <h2>移动端登录页面设计说明</h2>
+            
+            <h3>设计理念</h3>
+            <p>这个登录页面设计采用了现代简约的风格，结合了渐变色背景和纯净的白色登录框，创造出既美观又专业的用户体验。界面布局清晰，视觉层次分明，引导用户自然完成登录流程。</p>
+            
+            <h3>色彩方案</h3>
+            <p>采用了蓝紫渐变作为主色调，传达科技感和信任感，同时保持现代感。</p>
+            <div class="color-palette">
+                <div class="color-box" style="background-color: #2575fc;" data-color="#2575fc"></div>
+                <div class="color-box" style="background-color: #6a11cb;" data-color="#6a11cb"></div>
+                <div class="color-box" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                <div class="color-box" style="background-color: #f5f7fa;" data-color="#f5f7fa"></div>
+            </div>
+            
+            <h3>交互设计</h3>
+            <ul>
+                <li><strong>输入框焦点效果</strong>：当用户点击输入框时，边框颜色变化提供即时反馈</li>
+                <li><strong>按钮悬停效果</strong>：按钮在悬停时有微妙的颜色变化和轻微上浮效果</li>
+                <li><strong>点击反馈</strong>：所有可点击元素都有明确的视觉反馈</li>
+                <li><strong>表单验证</strong>：输入不符合要求时提供即时反馈</li>
+            </ul>
+            
+            <h3>可用性考虑</h3>
+            <ul>
+                <li><strong>清晰的视觉层次</strong>：通过大小、间距和颜色区分不同的信息重要性</li>
+                <li><strong>直观的表单标签</strong>：每个输入项都有明确的标签</li>
+                <li><strong>适当的输入框大小</strong>：考虑到移动端触控的特性，设计了足够大的点击区域</li>
+                <li><strong>记住我</strong>：提供记住账号选项，提高回访用户的便利性</li>
+                <li><strong>忘记密码</strong>：方便用户在无法登录时找回密码</li>
+            </ul>
+            
+            <h3>视觉元素</h3>
+            <ul>
+                <li><strong>Logo设计</strong>：简洁现代，与整体色调一致</li>
+                <li><strong>圆角设计</strong>：所有元素采用圆角设计，增加亲和力</li>
+                <li><strong>阴影效果</strong>：适当的阴影增加深度感，提升界面质感</li>
+                <li><strong>微妙的背景装饰</strong>：半透明圆形元素增加视觉层次，但不干扰主要内容</li>
+            </ul>
+            
+            <h3>响应性设计</h3>
+            <p>虽然这是一个移动端原型，但设计也考虑了在各种屏幕尺寸下的显示效果。所有元素都使用了相对单位，确保在不同设备上保持良好的显示效果。</p>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+    <div class="login-message" id="login-message"></div>
+    
+    <!-- 注册模态窗口 -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">&times;</button>
+            <div class="modal-header">
+                <h2>创建新账号</h2>
+                <p>请填写以下信息完成注册</p>
+            </div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-username">用户名</label>
+                    <input type="text" id="reg-username" placeholder="请输入用户名" autocomplete="off">
+                    <span class="icon">👤</span>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">密码</label>
+                    <input type="password" id="reg-password" placeholder="请输入密码">
+                    <span class="icon">🔒</span>
+                </div>
+                <div class="form-group">
+                    <label for="reg-confirm-password">确认密码</label>
+                    <input type="password" id="reg-confirm-password" placeholder="请再次输入密码">
+                    <span class="icon">🔒</span>
+                </div>
+                <button type="submit" class="login-button">注册</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 引入数据库脚本 -->
+    <script src="db.js"></script>
+    <script>
+        // 交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化数据库
+            UserDB.init().catch(error => {
+                console.error('数据库初始化失败:', error);
+                showMessage('数据库连接失败，请刷新页面重试', true);
+            });
+            
+            // 获取登录表单元素
+            const loginForm = document.getElementById('login-form');
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            const loginButton = document.getElementById('login-button');
+            const forgotPassword = document.getElementById('forgot-password');
+            const tooltip = document.getElementById('tooltip');
+            const loginMessage = document.getElementById('login-message');
+            
+            // 获取注册相关元素
+            const registerLink = document.getElementById('register-link');
+            const registerModal = document.getElementById('register-modal');
+            const closeModal = document.getElementById('close-modal');
+            const registerForm = document.getElementById('register-form');
+            const regUsername = document.getElementById('reg-username');
+            const regPassword = document.getElementById('reg-password');
+            const regConfirmPassword = document.getElementById('reg-confirm-password');
+            
+            // 显示注册模态窗口
+            registerLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                registerModal.classList.add('active');
+            });
+            
+            // 关闭注册模态窗口
+            closeModal.addEventListener('click', function() {
+                registerModal.classList.remove('active');
+            });
+            
+            // 点击模态窗口外部关闭
+            window.addEventListener('click', function(e) {
+                if (e.target === registerModal) {
+                    registerModal.classList.remove('active');
+                }
+            });
+            
+            // 处理注册表单提交
+            registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 验证用户输入
+                if (regUsername.value.trim() === '') {
+                    showMessage('请输入用户名', true);
+                    regUsername.focus();
+                    return;
+                }
+                
+                if (regPassword.value.trim() === '') {
+                    showMessage('请输入密码', true);
+                    regPassword.focus();
+                    return;
+                }
+                
+                if (regPassword.value !== regConfirmPassword.value) {
+                    showMessage('两次输入的密码不一致', true);
+                    regConfirmPassword.focus();
+                    return;
+                }
+                
+                // 添加新用户到数据库
+                UserDB.addUser({
+                    username: regUsername.value,
+                    password: regPassword.value
+                }).then(result => {
+                    // 显示注册成功消息
+                    showMessage('注册成功！请使用新账号登录');
+                    
+                    // 重置表单并关闭模态窗口
+                    registerForm.reset();
+                    registerModal.classList.remove('active');
+                }).catch(error => {
+                    // 显示错误消息
+                    showMessage(error.message || '注册失败，请重试', true);
+                });
+            });
+            
+            // 表单提交处理
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 简单验证
+                if (username.value.trim() === '') {
+                    showMessage('请输入用户名', true);
+                    username.focus();
+                    return;
+                }
+                
+                if (password.value.trim() === '') {
+                    showMessage('请输入密码', true);
+                    password.focus();
+                    return;
+                }
+                
+                // 验证用户登录
+                UserDB.authenticateUser(username.value, password.value)
+                    .then(result => {
+                        if (result.success) {
+                            // 登录成功
+                            showMessage('登录成功，欢迎回来！');
+                            
+                            // 重置表单
+                            setTimeout(() => {
+                                loginForm.reset();
+                            }, 2000);
+                        } else {
+                            // 登录失败
+                            showMessage(result.message, true);
+                        }
+                    })
+                    .catch(error => {
+                        showMessage('登录过程中出错，请重试', true);
+                        console.error('登录错误:', error);
+                    });
+            });
+            
+            // 忘记密码链接
+            forgotPassword.addEventListener('click', function(e) {
+                e.preventDefault();
+                showMessage('密码重置功能尚未实现');
+            });
+            
+            // 显示提示信息
+            function showMessage(message, isError = false) {
+                loginMessage.textContent = message;
+                loginMessage.className = 'login-message' + (isError ? ' error' : '');
+                
+                // 显示消息
+                setTimeout(() => {
+                    loginMessage.classList.add('show');
+                }, 10);
+                
+                // 3秒后隐藏
+                setTimeout(() => {
+                    loginMessage.classList.remove('show');
+                }, 3000);
+            }
+            
+            // 工具提示功能
+            function showTooltip(element, message) {
+                element.addEventListener('mouseenter', function(e) {
+                    tooltip.textContent = message;
+                    tooltip.style.opacity = '1';
+                    
+                    const rect = element.getBoundingClientRect();
+                    tooltip.style.top = (rect.top - 35) + 'px';
+                    tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    tooltip.style.opacity = '0';
+                });
+            }
+            
+            // 为可交互元素添加提示
+            showTooltip(loginButton, '点击登录');
+            showTooltip(forgotPassword, '重置您的密码');
+            showTooltip(registerLink, '创建新账号');
+            
+            // 输入框焦点效果
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

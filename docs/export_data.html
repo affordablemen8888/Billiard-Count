@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库数据导出工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2575fc;
+            margin-bottom: 24px;
+        }
+        
+        .button-container {
+            margin: 24px 0;
+        }
+        
+        button {
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(to right, #1e63d0, #5e0fb5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+            display: block;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+            display: block;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow: auto;
+            max-height: 300px;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 20px;
+        }
+        
+        .options {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 6px;
+        }
+        
+        .option-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>台球比赛系统 - 数据库导出工具</h1>
+        <p>此工具可以将IndexedDB中的用户数据导出为JSON文件，用于数据库迁移。</p>
+        
+        <div class="options">
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="exclude-password" checked>
+                    导出时排除密码字段（推荐用于数据安全）
+                </label>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="format-json" checked>
+                    格式化JSON输出（美化缩进）
+                </label>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="export-button">导出用户数据</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div id="preview-container" style="display: none;">
+            <h2>数据预览</h2>
+            <pre id="data-preview"></pre>
+        </div>
+    </div>
+    
+    <!-- 引入数据库脚本 -->
+    <script src="../db.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const exportButton = document.getElementById('export-button');
+            const statusElement = document.getElementById('status');
+            const previewContainer = document.getElementById('preview-container');
+            const dataPreview = document.getElementById('data-preview');
+            const excludePasswordCheckbox = document.getElementById('exclude-password');
+            const formatJsonCheckbox = document.getElementById('format-json');
+            
+            // 初始化数据库
+            UserDB.init()
+                .then(() => {
+                    showStatus('数据库连接成功，可以导出数据', 'success');
+                    exportButton.disabled = false;
+                })
+                .catch(error => {
+                    showStatus(`数据库连接失败: ${error.message}`, 'error');
+                    exportButton.disabled = true;
+                });
+            
+            // 导出数据按钮点击事件
+            exportButton.addEventListener('click', exportDatabaseData);
+            
+            // 导出数据库数据
+            function exportDatabaseData() {
+                exportButton.disabled = true;
+                showStatus('正在获取数据...', 'success');
+                
+                UserDB.getAllUsers()
+                    .then(users => {
+                        if (users.length === 0) {
+                            showStatus('没有找到用户数据', 'error');
+                            exportButton.disabled = false;
+                            return;
+                        }
+                        
+                        // 处理数据（可能排除密码）
+                        let processedUsers = users;
+                        if (excludePasswordCheckbox.checked) {
+                            processedUsers = users.map(user => {
+                                const { password, ...userWithoutPassword } = user;
+                                return userWithoutPassword;
+                            });
+                        }
+                        
+                        // 格式化JSON
+                        const spacing = formatJsonCheckbox.checked ? 2 : 0;
+                        const dataStr = JSON.stringify(processedUsers, null, spacing);
+                        
+                        // 创建下载链接
+                        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                        const exportFileDefaultName = `billiards_users_data_${formatDate(new Date())}.json`;
+                        
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        
+                        // 显示预览
+                        dataPreview.textContent = dataStr;
+                        previewContainer.style.display = 'block';
+                        
+                        // 下载文件
+                        linkElement.click();
+                        
+                        showStatus(`成功导出 ${users.length} 条用户数据！`, 'success');
+                        exportButton.disabled = false;
+                    })
+                    .catch(error => {
+                        showStatus(`导出数据失败: ${error.message}`, 'error');
+                        exportButton.disabled = false;
+                    });
+            }
+            
+            // 显示状态信息
+            function showStatus(message, type) {
+                statusElement.textContent = message;
+                statusElement.className = 'status';
+                if (type) {
+                    statusElement.classList.add(type);
+                }
+            }
+            
+            // 格式化日期为字符串 (yyyy-mm-dd)
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+        });
+    </script>
+</body>
+</html> 

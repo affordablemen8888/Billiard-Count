@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台球比赛</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        
+        /* 横屏手机容器 */
+        .phone-container {
+            width: 100%;
+            max-width: 812px;
+            height: auto;
+            min-height: 375px;
+            background-color: #6441a5;
+            background-image: linear-gradient(45deg, #6441a5, #2a0845);
+            border: 10px solid #333;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+            margin: 20px;
+        }
+        
+        /* 修复iOS Safari的溢出问题 */
+        @supports (-webkit-touch-callout: none) {
+            .phone-container {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* 模拟顶部状态栏 */
+        .status-bar {
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+        
+        /* 主内容区 */
+        .content {
+            padding: 15px;
+            height: auto;
+            min-height: calc(100% - 20px);
+            overflow-y: auto;
+        }
+        
+        /* 比赛标题 */
+        .match-title {
+            background-color: rgba(141, 173, 230, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .match-title h1 {
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        /* 玩家区域 */
+        .players-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .player-box {
+            background-color: rgba(141, 173, 230, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            width: 22%;
+            text-align: center;
+            color: #333;
+        }
+        
+        .player-box.add-player {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .player-box.add-player:hover {
+            background-color: rgba(141, 173, 230, 0.9);
+        }
+        
+        /* 操作按钮 */
+        .action-button-container {
+            margin-bottom: 15px;
+        }
+        
+        .action-button {
+            width: 100%;
+            padding: 15px;
+            background-color: rgba(141, 173, 230, 0.7);
+            border: none;
+            border-radius: 15px;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .action-button:hover {
+            background-color: rgba(141, 173, 230, 0.9);
+        }
+        
+        /* 比赛区域 */
+        .match-arena {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .position-box {
+            background-color: rgba(141, 173, 230, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            width: 22%;
+            text-align: center;
+            color: #333;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .ball-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            height: 200px;
+            position: relative;
+        }
+        
+        .ball-image {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 75px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .ball-image:hover {
+            transform: scale(1.05);
+        }
+        
+        .ball-image:active {
+            transform: scale(0.95);
+        }
+        
+        .score-display {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* 比赛模式选择模态窗口 */
+        .game-mode-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .game-mode-option {
+            background-color: rgba(141, 173, 230, 0.3);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .game-mode-option:hover {
+            background-color: rgba(141, 173, 230, 0.8);
+        }
+        
+        .game-mode-option.selected {
+            background-color: rgba(141, 173, 230, 0.8);
+            border: 2px solid #2575fc;
+        }
+        
+        /* 禁用按钮样式 */
+        .bottom-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: rgba(200, 200, 200, 0.5);
+            color: #777;
+            pointer-events: none;
+        }
+        
+        /* 底部按钮 */
+        .bottom-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: auto;
+        }
+        
+        .bottom-button {
+            background-color: rgba(141, 173, 230, 0.7);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .bottom-button:hover {
+            background-color: rgba(141, 173, 230, 0.9);
+        }
+        
+        /* 消息提示样式 */
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .message.error {
+            background-color: #f44336;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(10px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 767px) {
+            .phone-container {
+                border-width: 5px;
+                border-radius: 20px;
+                margin: 10px;
+                max-height: none;
+            }
+            
+            .match-title {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .match-title h1 {
+                font-size: 18px;
+            }
+            
+            .player-box, .position-box, .action-button, .bottom-button {
+                padding: 10px;
+                font-size: 14px;
+            }
+            
+            .ball-container {
+                height: 150px;
+            }
+            
+            .ball-image {
+                width: 100px;
+                height: 100px;
+                border-radius: 50px;
+            }
+            
+            .position-box {
+                height: 60px;
+            }
+            
+            .content {
+                height: auto;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 30px;
+            }
+            
+            .players-container {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+            }
+            
+            .player-box {
+                width: calc(50% - 10px);
+                margin-bottom: 10px;
+                box-sizing: border-box;
+            }
+        }
+        
+        /* 添加拖拽相关样式 */
+        .draggable {
+            cursor: move;
+            user-select: none;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .draggable:hover {
+            background-color: rgba(141, 173, 230, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .dragging {
+            opacity: 0.5;
+        }
+        
+        .drag-over {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px dashed #2575fc;
+        }
+        
+        /* 模态窗口样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 320px;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 22px;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .organization-members {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .member-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: rgba(141, 173, 230, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .member-item:hover {
+            background-color: rgba(141, 173, 230, 0.8);
+        }
+        
+        .member-item.selected {
+            background-color: rgba(141, 173, 230, 0.8);
+            border-left: 3px solid #2575fc;
+        }
+        
+        /* 已选择成员的样式 */
+        .member-item.already-selected {
+            background-color: rgba(200, 200, 200, 0.5);
+            color: #888;
+            position: relative;
+        }
+        
+        .member-item.already-selected::after {
+            content: "已选择";
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 比赛开始后的状态变化 */
+        .game-started .draggable {
+            cursor: default;
+            pointer-events: none;
+        }
+        
+        .game-started .add-player {
+            display: none;
+        }
+        
+        .game-started .player-box {
+            background-color: rgba(141, 173, 230, 0.5);
+        }
+        
+        .game-started .action-button {
+            background-color: rgba(99, 125, 194, 0.9);
+        }
+        
+        /* MVP烟花效果样式 */
+        .mvp-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1500;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .mvp-container.active {
+            display: block;
+        }
+        
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: explode 1s ease-out forwards;
+        }
+        
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20);
+                opacity: 0;
+            }
+        }
+        
+        .mvp-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-family: 'Poppins', fantasy, cursive;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff, 0 0 30px #ffff00;
+            z-index: 1600;
+            opacity: 0;
+            transition: opacity 1s ease-in;
+            max-width: 90%;
+            display: none;
+        }
+        
+        .mvp-announcement.active {
+            display: block;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="status-bar"></div>
+        <div class="content">
+            <div class="match-title">
+                <h1>第xx届四人台球对抗赛</h1>
+            </div>
+            
+            <div class="players-container">
+                <div class="player-box">用户名</div>
+                <div class="player-box add-player">+</div>
+                <div class="player-box add-player">+</div>
+                <div class="player-box add-player">+</div>
+            </div>
+            
+            <div class="action-button-container">
+                <button class="action-button">比赛开始</button>
+            </div>
+            
+            <div class="match-arena">
+                <div class="position-box"> </div>
+                <div class="ball-container">
+                    <img src="src/static/BTQ.png" alt="白球" class="ball-image" id="left-ball">
+                    <img src="src/static/HTQ.png" alt="黑球" class="ball-image" id="right-ball">
+                    <div class="score-display">
+                        <span id="left-score">0</span> : <span id="right-score">0</span>
+                    </div>
+                </div>
+                <div class="position-box"> </div>
+            </div>
+            
+            <div class="match-arena" style="margin-top: -15px;">
+                <div class="position-box"> </div>
+                <div class="ball-container" style="opacity: 0;"></div>
+                <div class="position-box"> </div>
+            </div>
+            
+            <div class="bottom-buttons">
+                <button class="bottom-button">再来一局</button>
+                <button class="bottom-button">结束比赛</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 比赛模式选择模态窗口 -->
+    <div class="modal" id="game-mode-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>选择比赛模式</h2>
+            </div>
+            <div class="game-mode-options">
+                <div class="game-mode-option" data-mode="5">抢5</div>
+                <div class="game-mode-option" data-mode="7">抢7</div>
+                <div class="game-mode-option" data-mode="9">抢9</div>
+            </div>
+            <button class="action-button" id="confirm-game-mode">开始比赛</button>
+        </div>
+    </div>
+    
+    <!-- 成员选择模态窗口 -->
+    <div class="modal" id="member-select-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-member-modal">&times;</button>
+            <div class="modal-header">
+                <h2>选择组织成员</h2>
+            </div>
+            <div class="organization-members" id="organization-members">
+                <!-- 组织成员将通过JavaScript动态加载 -->
+            </div>
+            <button class="action-button" id="confirm-member-selection">确认选择</button>
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <!-- MVP烟花效果和公告 -->
+    <div class="mvp-container" id="mvp-container"></div>
+    <div class="mvp-announcement" id="mvp-announcement"></div>
+    
+    <!-- 引入数据库脚本 -->
+    <script src="db.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageElement = document.getElementById('message');
+            const addPlayerButtons = document.querySelectorAll('.player-box.add-player');
+            const startMatchButton = document.querySelector('.action-button');
+            const restartButton = document.querySelector('.bottom-button:first-child');
+            const endMatchButton = document.querySelector('.bottom-button:last-child');
+            const matchTitleElement = document.querySelector('.match-title h1');
+            const currentPlayerBox = document.querySelector('.player-box:not(.add-player)');
+            const positionBoxes = document.querySelectorAll('.position-box');
+            const mvpContainer = document.getElementById('mvp-container');
+            const mvpAnnouncement = document.getElementById('mvp-announcement');
+            
+            // 添加消息显示函数定义
+            function showMessage(message, isError = false) {
+                console.log(`显示消息: ${message}, 是否错误: ${isError}`);
+                if (!messageElement) {
+                    console.error('消息元素未找到');
+                    return;
+                }
+                
+                messageElement.textContent = message;
+                messageElement.className = 'message' + (isError ? ' error' : '');
+                messageElement.classList.add('show');
+                
+                setTimeout(function() {
+                    messageElement.classList.remove('show');
+                }, 3000);
+            }
+            
+            // 设置位置框的data-position属性
+            positionBoxes.forEach((box, index) => {
+                if (index === 0) {
+                    box.setAttribute('data-position', '左上');
+                    box.textContent = '左上';
+                } else if (index === 1) {
+                    box.setAttribute('data-position', '右上');
+                    box.textContent = '右上';
+                } else if (index === 2) {
+                    box.setAttribute('data-position', '左下');
+                    box.textContent = '左下';
+                } else if (index === 3) {
+                    box.setAttribute('data-position', '右下');
+                    box.textContent = '右下';
+                }
+            });
+            
+            // 计分相关元素
+            const leftBall = document.getElementById('left-ball');
+            const rightBall = document.getElementById('right-ball');
+            const leftScoreElement = document.getElementById('left-score');
+            const rightScoreElement = document.getElementById('right-score');
+            
+            // 比赛模式选择模态窗口相关元素
+            const gameModeModal = document.getElementById('game-mode-modal');
+            const gameModeOptions = document.querySelectorAll('.game-mode-option');
+            const confirmGameModeButton = document.getElementById('confirm-game-mode');
+            
+            // 成员选择模态窗口相关元素
+            const memberSelectModal = document.getElementById('member-select-modal');
+            const closeMemberModalButton = document.getElementById('close-member-modal');
+            const organizationMembersContainer = document.getElementById('organization-members');
+            const confirmMemberSelectionButton = document.getElementById('confirm-member-selection');
+            
+            // 比赛状态变量
+            let matchStarted = false;
+            let selectedGameMode = null;
+            let leftScore = 0;
+            let rightScore = 0;
+            let matchEnded = false;
+            
+            // 跟踪当前比赛中的用户战绩
+            let currentMatchStats = new Map(); // 用户名 -> {wins: 0, losses: 0}
+            
+            // 模拟组织成员数据（实际使用时应从数据库获取）
+            let organizationMembers = [];
+            let selectedMember = null;
+            let currentActiveAddButton = null;
+            
+            // 存储所有已拖拽玩家的位置信息
+            const playerPositions = new Map();
+            
+            // 获取当前用户信息
+            let currentUser = null;
+            
+            // 比赛开始前和比赛进行中禁用再来一局按钮
+            restartButton.disabled = true;
+            
+            // 如果还没有比赛数据，禁用结束比赛按钮
+            if (currentMatchStats && currentMatchStats.size === 0) {
+                endMatchButton.disabled = true;
+            }
+            
+            // 初始化数据库
+            UserDB.init().then(() => {
+                console.log('数据库初始化成功');
+                
+                // 在数据库初始化后获取用户信息
+                // 从会话存储中获取当前登录的用户
+                const currentUserData = sessionStorage.getItem('currentUser');
+                
+                if (currentUserData) {
+                    try {
+                        currentUser = JSON.parse(currentUserData);
+                        
+                        // 设置当前用户名到玩家框
+                        currentPlayerBox.textContent = currentUser.username;
+                        
+                        // 设置比赛届数 (用户比赛次数 + 1)
+                        const matchCount = parseInt(currentUser.matches || '0');
+                        matchTitleElement.textContent = `第${matchCount + 1}届四人台球对抗赛`;
+                        
+                        // 如果当前用户有组织，获取组织成员
+                        if (currentUser.organization) {
+                            // 获取组织成员
+                            fetchOrganizationMembers(currentUser.organization);
+                        } else {
+                            showMessage('您尚未加入组织，无法添加其他成员', true);
+                        }
+                        
+                    } catch (error) {
+                        console.error('解析用户数据失败:', error);
+                        showMessage('获取用户信息失败', true);
+                    }
+                } else {
+                    // 如果没有登录用户信息，返回登录页
+                    window.location.href = 'login_prototype.html';
+                }
+                
+                // 设置当前用户名框为可拖拽元素
+                setupDraggable(currentPlayerBox);
+                
+            }).catch(error => {
+                console.error('数据库初始化失败:', error);
+                showMessage('数据库连接失败，请重试', true);
+            });
+            
+            // 模拟获取组织成员
+            function fetchOrganizationMembers(organizationName) {
+                // 从数据库获取组织中的所有用户（除当前用户外）
+                UserDB.getAllUsers()
+                    .then(users => {
+                        if (users && users.length > 0) {
+                            // 筛选出同一组织的成员，排除当前用户
+                            organizationMembers = users.filter(user => 
+                                user.organization === organizationName && 
+                                user.username !== currentUser.username
+                            );
+                            
+                            if (organizationMembers.length === 0) {
+                                showMessage('您的组织中没有其他成员', true);
+                            }
+                        } else {
+                            showMessage('获取组织成员失败', true);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取用户列表错误:', error);
+                        showMessage('获取组织成员出错', true);
+                    });
+            }
+            
+            // 显示组织成员选择界面
+            function showMemberSelection() {
+                // 清空之前的内容
+                organizationMembersContainer.innerHTML = '';
+                
+                // 如果没有组织成员，显示提示
+                if (organizationMembers.length === 0) {
+                    organizationMembersContainer.innerHTML = '<div class="member-item">没有其他组织成员可选择</div>';
+                    return;
+                }
+                
+                // 添加成员列表
+                organizationMembers.forEach(member => {
+                    const memberElement = document.createElement('div');
+                    memberElement.classList.add('member-item');
+                    memberElement.textContent = member.username;
+                    memberElement.dataset.username = member.username;
+                    
+                    // 检查该成员是否已经被选中（在玩家列表中）
+                    let alreadySelected = false;
+                    addPlayerButtons.forEach(btn => {
+                        if (btn.textContent === member.username && !btn.classList.contains('add-player')) {
+                            alreadySelected = true;
+                            memberElement.classList.add('already-selected');
+                        }
+                    });
+                    
+                    // 点击成员选择或取消选择
+                    memberElement.addEventListener('click', function() {
+                        // 移除之前选择的高亮
+                        document.querySelectorAll('.member-item.selected').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        
+                        // 高亮当前选择
+                        this.classList.add('selected');
+                        selectedMember = member.username;
+                    });
+                    
+                    organizationMembersContainer.appendChild(memberElement);
+                });
+                
+                // 显示模态窗口
+                memberSelectModal.classList.add('active');
+            }
+            
+            // 添加玩家按钮点击事件
+            addPlayerButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 如果这个按钮已经有成员，也允许重新选择（直到比赛开始）
+                    // 但要保留类型信息以正确处理不同情况
+                    const isAddButton = this.classList.contains('add-player');
+                    
+                    // 设置当前活跃的添加按钮
+                    currentActiveAddButton = this;
+                    currentActiveAddButton.dataset.isAddButton = isAddButton;
+                    
+                    // 显示成员选择模态窗口
+                    showMemberSelection();
+                });
+            });
+            
+            // 确认成员选择按钮事件
+            confirmMemberSelectionButton.addEventListener('click', function() {
+                if (!selectedMember || !currentActiveAddButton) {
+                    showMessage('请先选择一个组织成员', true);
+                    return;
+                }
+                
+                // 检查是否已经选择了该成员
+                let memberAlreadySelected = false;
+                const currentAddButton = currentActiveAddButton;
+                
+                // 检查当前选择的成员是否已在其他按钮上
+                addPlayerButtons.forEach(btn => {
+                    if (btn !== currentAddButton && 
+                        btn.textContent === selectedMember && 
+                        !btn.classList.contains('add-player')) {
+                        memberAlreadySelected = true;
+                    }
+                });
+                
+                if (memberAlreadySelected) {
+                    showMessage('该成员已经被选择，请选择其他成员', true);
+                    return;
+                }
+                
+                // 如果按钮已经有用户，并且用户被放置在位置上，需要清除该位置
+                if (!currentAddButton.dataset.isAddButton) {
+                    const previousUsername = currentAddButton.textContent;
+                    
+                    // 从位置上移除该用户
+                    positionBoxes.forEach(posBox => {
+                        if (posBox.textContent === previousUsername) {
+                            posBox.textContent = posBox.getAttribute('data-position');
+                            // 移除位置映射
+                            playerPositions.delete(previousUsername);
+                        }
+                    });
+                }
+                
+                // 设置选中的成员到按钮上
+                currentAddButton.textContent = selectedMember;
+                currentAddButton.classList.remove('add-player');
+                
+                // 使新添加的成员可拖拽
+                setupDraggable(currentAddButton);
+                
+                // 关闭模态窗口
+                memberSelectModal.classList.remove('active');
+                
+                // 重置选择
+                selectedMember = null;
+                
+                showMessage(`已添加 ${currentAddButton.textContent} 到比赛`);
+            });
+            
+            // 关闭模态窗口按钮事件
+            closeMemberModalButton.addEventListener('click', function() {
+                memberSelectModal.classList.remove('active');
+                selectedMember = null;
+            });
+            
+            // 点击模态窗口背景关闭
+            memberSelectModal.addEventListener('click', function(e) {
+                if (e.target === memberSelectModal) {
+                    memberSelectModal.classList.remove('active');
+                    selectedMember = null;
+                }
+            });
+            
+            // 比赛模式选择
+            gameModeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除之前选择的高亮
+                    gameModeOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 高亮当前选择
+                    this.classList.add('selected');
+                    selectedGameMode = parseInt(this.dataset.mode);
+                    console.log(`选择了比赛模式: 抢${selectedGameMode}`);
+                });
+            });
+            
+            // 确认比赛模式
+            confirmGameModeButton.addEventListener('click', function() {
+                if (!selectedGameMode) {
+                    showMessage('请选择比赛模式', true);
+                    console.log('未选择比赛模式');
+                    return;
+                }
+                
+                console.log(`确认比赛模式: 抢${selectedGameMode}`);
+                
+                // 关闭模态窗口
+                gameModeModal.classList.remove('active');
+                
+                // 开始比赛
+                startMatch();
+                
+                // 更新按钮文本为"抢X大战"
+                startMatchButton.textContent = `抢${selectedGameMode}大战`;
+                
+                showMessage(`比赛模式：抢${selectedGameMode}，比赛开始！`);
+            });
+            
+            // 开始比赛按钮点击事件
+            startMatchButton.addEventListener('click', function() {
+                // 检查是否有足够的玩家和是否所有玩家都已分配位置
+                const selectedPlayers = document.querySelectorAll('.player-box:not(.add-player)');
+                if (selectedPlayers.length < 2) {
+                    showMessage('至少需要两名玩家才能开始比赛', true);
+                    return;
+                }
+                
+                // 检查至少有一个玩家的位置已分配
+                let positionAssigned = false;
+                selectedPlayers.forEach(player => {
+                    if (playerPositions.has(player.textContent)) {
+                        positionAssigned = true;
+                    }
+                });
+                
+                if (!positionAssigned) {
+                    showMessage('至少需要一名玩家分配位置', true);
+                    return;
+                }
+                
+                // 如果比赛已经开始，按钮被点击代表显示统计信息
+                if (matchStarted) {
+                    showMessage('显示技术统计功能尚未实现');
+                    return;
+                }
+                
+                // 显示比赛模式选择模态窗口
+                gameModeModal.classList.add('active');
+            });
+            
+            // 实际开始比赛的函数
+            function startMatch() {
+                console.log('开始比赛函数被调用');
+                
+                // 重置比赛相关状态
+                leftScore = 0;
+                rightScore = 0;
+                leftScoreElement.textContent = '0';
+                rightScoreElement.textContent = '0';
+                matchEnded = false;
+                
+                // 设置比赛已开始状态
+                matchStarted = true;
+                console.log('比赛状态设置为已开始，selectedGameMode =', selectedGameMode);
+                
+                // 比赛开始后的逻辑 - 修复克隆节点导致的事件丢失问题
+                document.querySelector('.content').classList.add('game-started');
+                
+                // 禁用拖拽而不是移除事件
+                const allPlayerBoxes = document.querySelectorAll('.player-box');
+                allPlayerBoxes.forEach(box => {
+                    if (!box.classList.contains('add-player')) {
+                        box.setAttribute('draggable', 'false');
+                        box.style.cursor = 'default';
+                    }
+                });
+                
+                // 隐藏未选择的加号按钮
+                document.querySelectorAll('.player-box.add-player').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                
+                // 禁用结束比赛按钮，直到本局比赛完成
+                endMatchButton.disabled = true;
+                
+                // 更新用户比赛次数
+                if (currentUser) {
+                    try {
+                        // 使用UserDB更新用户比赛统计信息
+                        UserDB.init()
+                            .then(() => UserDB.getUser(currentUser.username))
+                            .then(userData => {
+                                if (userData) {
+                                    // 更新用户对象
+                                    userData.matches = (parseInt(userData.matches || 0) + 1).toString();
+                                    
+                                    // 使用UserDB.updateUser更新用户数据
+                                    return UserDB.updateUser(userData);
+                                } else {
+                                    throw new Error('找不到当前用户数据');
+                                }
+                            })
+                            .then(result => {
+                                console.log('用户比赛次数已更新:', result);
+                                // 更新当前用户变量
+                                currentUser = result.user;
+                                console.log('当前用户数据已更新:', currentUser);
+                            })
+                            .catch(error => {
+                                console.error('更新用户数据时出错:', error);
+                                showMessage('更新统计信息失败', true);
+                            });
+                    } catch (error) {
+                        console.error('数据库操作失败:', error);
+                        showMessage('数据库操作失败', true);
+                    }
+                }
+                
+                // 启用球的点击功能
+                setupBallClickEvents();
+            }
+            
+            // 设置球的点击事件
+            function setupBallClickEvents() {
+                console.log('设置球的点击事件');
+                
+                // 先移除之前的点击事件（防止重复绑定）
+                leftBall.removeEventListener('click', handleLeftBallClick);
+                rightBall.removeEventListener('click', handleRightBallClick);
+                
+                // 定义球的点击处理函数
+                function handleLeftBallClick() {
+                    console.log('白球被点击，matchStarted:', matchStarted, 'matchEnded:', matchEnded);
+                    if (!matchStarted || matchEnded) {
+                        console.log('比赛未开始或已结束，忽略点击');
+                        return;
+                    }
+                    
+                    leftScore++;
+                    console.log(`左侧分数增加到 ${leftScore}，目标分数: ${selectedGameMode}`);
+                    leftScoreElement.textContent = leftScore;
+                    
+                    // 检查是否有一方达到胜利条件
+                    checkForWinner();
+                }
+                
+                function handleRightBallClick() {
+                    console.log('黑球被点击，matchStarted:', matchStarted, 'matchEnded:', matchEnded);
+                    if (!matchStarted || matchEnded) {
+                        console.log('比赛未开始或已结束，忽略点击');
+                        return;
+                    }
+                    
+                    rightScore++;
+                    console.log(`右侧分数增加到 ${rightScore}，目标分数: ${selectedGameMode}`);
+                    rightScoreElement.textContent = rightScore;
+                    
+                    // 检查是否有一方达到胜利条件
+                    checkForWinner();
+                }
+                
+                // 添加新的点击事件处理
+                leftBall.addEventListener('click', handleLeftBallClick);
+                rightBall.addEventListener('click', handleRightBallClick);
+            }
+            
+            // 检查是否有赢家
+            function checkForWinner() {
+                console.log(`检查胜利条件，左侧分数: ${leftScore}, 右侧分数: ${rightScore}, 目标分数: ${selectedGameMode}`);
+                
+                if (leftScore >= selectedGameMode) {
+                    console.log('左侧达到胜利条件，宣布左侧胜利');
+                    declareWinner('left');
+                } else if (rightScore >= selectedGameMode) {
+                    console.log('右侧达到胜利条件，宣布右侧胜利');
+                    declareWinner('right');
+                } else {
+                    console.log('未达到胜利条件，继续比赛');
+                }
+            }
+            
+            // 宣布胜利方
+            function declareWinner(side) {
+                console.log(`宣布胜利方: ${side}`);
+                matchEnded = true;
+                
+                // 获取左侧和右侧玩家
+                const leftPlayers = [];
+                const rightPlayers = [];
+                
+                // 遍历位置框，收集各边的玩家
+                positionBoxes.forEach((box, index) => {
+                    const positionId = box.getAttribute('data-position');
+                    const playerName = box.textContent;
+                    
+                    console.log(`检查位置框 ${index}: 位置="${positionId}", 玩家="${playerName}"`);
+                    
+                    // 如果位置框内有玩家名（不是默认文本）
+                    if (playerName && playerName.trim() !== '' && playerName !== positionId) {
+                        // 根据位置框的data-position属性确定是左侧还是右侧
+                        if (positionId && positionId.includes('左')) {
+                            console.log(`添加到左侧玩家: ${playerName}`);
+                            leftPlayers.push(playerName);
+                        } else if (positionId && positionId.includes('右')) {
+                            console.log(`添加到右侧玩家: ${playerName}`);
+                            rightPlayers.push(playerName);
+                        }
+                    } else {
+                        console.log(`位置框 ${index} 没有玩家或包含默认文本`);
+                    }
+                });
+                
+                console.log(`左侧玩家: ${leftPlayers.join(', ')}`);
+                console.log(`右侧玩家: ${rightPlayers.join(', ')}`);
+                
+                // 确定胜利的玩家名单
+                const winners = side === 'left' ? leftPlayers : rightPlayers;
+                const losers = side === 'left' ? rightPlayers : leftPlayers;
+                
+                console.log(`胜利玩家: ${winners.join(', ')}`);
+                console.log(`失败玩家: ${losers.join(', ')}`);
+                
+                // 更新当前比赛中的用户战绩
+                winners.forEach(username => {
+                    if (!currentMatchStats.has(username)) {
+                        currentMatchStats.set(username, { wins: 0, losses: 0 });
+                        console.log(`为 ${username} 创建新的战绩记录`);
+                    }
+                    const stats = currentMatchStats.get(username);
+                    stats.wins += 1;
+                    console.log(`${username} 胜场 +1，现在有 ${stats.wins} 场胜利`);
+                });
+                
+                losers.forEach(username => {
+                    if (!currentMatchStats.has(username)) {
+                        currentMatchStats.set(username, { wins: 0, losses: 0 });
+                        console.log(`为 ${username} 创建新的战绩记录`);
+                    }
+                    const stats = currentMatchStats.get(username);
+                    stats.losses += 1;
+                    console.log(`${username} 败场 +1，现在有 ${stats.losses} 场失败`);
+                });
+                
+                // 显示胜利消息
+                const winnerStr = winners.length > 0 ? winners.join('、') : '无人';
+                const loserStr = losers.length > 0 ? losers.join('、') : '无人';
+                
+                console.log(`准备显示胜利消息: 恭喜 ${winnerStr} 取得胜利！比分 ${leftScore}:${rightScore}`);
+                showMessage(`恭喜 ${winnerStr} 取得胜利！比分 ${leftScore}:${rightScore}`, false);
+                
+                // 更新玩家统计数据
+                updatePlayerStats(winners, losers, side);
+                
+                // 启用再来一局按钮
+                restartButton.disabled = false;
+                console.log('已启用"再来一局"按钮');
+                
+                // 启用结束比赛按钮
+                endMatchButton.disabled = false;
+                console.log('已启用"结束比赛"按钮');
+            }
+            
+            // 更新玩家统计数据
+            function updatePlayerStats(winners, losers, winningSide) {
+                UserDB.init().then(() => {
+                    UserDB.getAllUsers().then(users => {
+                        // 处理所有需要更新的用户
+                        const updatePromises = [];
+                        
+                        // 处理胜利方
+                        winners.forEach(username => {
+                            const user = users.find(u => u.username === username);
+                            if (user) {
+                                // 增加胜利局数
+                                user.wins = (parseInt(user.wins || 0) + 1).toString();
+                                
+                                // 增加胜利比赛数
+                                user.winMatches = (parseInt(user.winMatches || 0) + 1).toString();
+                                
+                                // 增加本侧得分数
+                                const sideScore = winningSide === 'left' ? leftScore : rightScore;
+                                user.scoreFor = (parseInt(user.scoreFor || 0) + sideScore).toString();
+                                
+                                // 增加对方侧得分数
+                                const oppositeSideScore = winningSide === 'left' ? rightScore : leftScore;
+                                user.scoreAgainst = (parseInt(user.scoreAgainst || 0) + oppositeSideScore).toString();
+                                
+                                // 使用UserDB.updateUser更新用户数据
+                                updatePromises.push(
+                                    UserDB.updateUser(user)
+                                        .then(result => {
+                                            console.log(`${user.username} 的胜利统计数据已更新:`, result);
+                                            
+                                            // 如果是当前登录用户，更新currentUser变量
+                                            if (user.username === currentUser.username) {
+                                                currentUser = user;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error(`更新 ${user.username} 数据失败:`, error);
+                                        })
+                                );
+                            }
+                        });
+                        
+                        // 处理失败方
+                        losers.forEach(username => {
+                            const user = users.find(u => u.username === username);
+                            if (user) {
+                                // 增加失败局数
+                                user.losses = (parseInt(user.losses || 0) + 1).toString();
+                                
+                                // 增加失败比赛数
+                                user.lossMatches = (parseInt(user.lossMatches || 0) + 1).toString();
+                                
+                                // 增加本侧得分数
+                                const sideScore = winningSide === 'left' ? rightScore : leftScore;
+                                user.scoreFor = (parseInt(user.scoreFor || 0) + sideScore).toString();
+                                
+                                // 增加对方侧得分数
+                                const oppositeSideScore = winningSide === 'left' ? leftScore : rightScore;
+                                user.scoreAgainst = (parseInt(user.scoreAgainst || 0) + oppositeSideScore).toString();
+                                
+                                // 使用UserDB.updateUser更新用户数据
+                                updatePromises.push(
+                                    UserDB.updateUser(user)
+                                        .then(result => {
+                                            console.log(`${user.username} 的失败统计数据已更新:`, result);
+                                            
+                                            // 如果是当前登录用户，更新currentUser变量
+                                            if (user.username === currentUser.username) {
+                                                currentUser = user;
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error(`更新 ${user.username} 数据失败:`, error);
+                                        })
+                                );
+                            }
+                        });
+                        
+                        // 等待所有更新完成
+                        Promise.all(updatePromises)
+                            .then(() => {
+                                console.log('所有玩家统计数据更新完成');
+                            })
+                            .catch(error => {
+                                console.error('更新玩家统计数据时发生错误:', error);
+                            });
+                    }).catch(error => {
+                        console.error('获取用户列表失败:', error);
+                        showMessage('获取用户列表失败', true);
+                    });
+                }).catch(error => {
+                    console.error('初始化数据库失败:', error);
+                    showMessage('数据库连接失败', true);
+                });
+            }
+            
+            // 再来一局按钮点击事件
+            restartButton.addEventListener('click', function() {
+                if (!matchEnded) {
+                    showMessage('当前比赛尚未结束，无法开始新局', true);
+                    return;
+                }
+                
+                // 重置得分
+                leftScore = 0;
+                rightScore = 0;
+                leftScoreElement.textContent = '0';
+                rightScoreElement.textContent = '0';
+                
+                // 重置比赛状态
+                matchEnded = false;
+                matchStarted = false;
+                
+                // 重置位置框内容
+                positionBoxes.forEach(box => {
+                    box.textContent = box.getAttribute('data-position') || ' ';
+                });
+                
+                // 清空玩家位置映射
+                playerPositions.clear();
+                
+                // 恢复玩家框的可拖拽状态
+                const playerBoxes = document.querySelectorAll('.player-box:not(.add-player)');
+                playerBoxes.forEach(box => {
+                    setupDraggable(box);
+                    box.setAttribute('draggable', 'true');
+                    box.style.cursor = 'move';
+                });
+                
+                // 移除比赛已开始的样式类
+                document.querySelector('.content').classList.remove('game-started');
+                
+                // 恢复按钮文本
+                startMatchButton.textContent = '比赛开始';
+                
+                // 重新禁用再来一局按钮
+                restartButton.disabled = true;
+                
+                // 如果没有之前的比赛数据，禁用结束比赛按钮
+                if (currentMatchStats.size === 0) {
+                    endMatchButton.disabled = true;
+                }
+                
+                showMessage('新一局比赛准备中，请重新分配选手位置！');
+            });
+            
+            // 结束比赛按钮点击事件
+            endMatchButton.addEventListener('click', function() {
+                // 如果按钮已禁用，忽略点击
+                if (this.disabled) {
+                    return;
+                }
+                
+                // 防止重复点击
+                this.disabled = true;
+                
+                // 创建标记变量，确保只触发一次重定向
+                let redirectScheduled = false;
+                
+                // 定义重定向函数
+                const scheduleRedirect = (delay = 3000) => {
+                    if (redirectScheduled) return;
+                    redirectScheduled = true;
+                    
+                    showMessage('正在返回仪表盘...');
+                    setTimeout(() => {
+                        // 添加时间戳参数确保页面刷新
+                        window.location.href = 'dashboard.html?t=' + new Date().getTime();
+                    }, delay);
+                };
+                
+                if (matchEnded || !matchStarted) {
+                    // 判断MVP并进行庆祝
+                    determineAndCelebrateMVP()
+                        .then(() => {
+                            scheduleRedirect();
+                        })
+                        .catch(error => {
+                            console.error('MVP处理失败:', error);
+                            showMessage('处理MVP时出错，仍将返回仪表盘', true);
+                            scheduleRedirect();
+                        });
+                    
+                    // 设置保底计时器，确保无论如何10秒后都会返回仪表盘
+                    setTimeout(() => {
+                        if (!redirectScheduled) {
+                            console.log('未检测到正常重定向，执行保底逻辑');
+                            scheduleRedirect(0); // 立即重定向
+                        }
+                    }, 10000);
+                } else {
+                    showMessage('请先完成当前比赛或开始新的比赛', true);
+                    // 恢复按钮状态
+                    this.disabled = false;
+                }
+            });
+            
+            // 判断MVP并进行庆祝
+            async function determineAndCelebrateMVP() {
+                let mvpName = '';
+                let maxWins = 0;
+                
+                console.log('当前比赛统计数据:', Array.from(currentMatchStats.entries()));
+
+                // 找出获胜场次最多的玩家
+                currentMatchStats.forEach((stats, username) => {
+                    console.log(`检查用户 ${username} 的战绩:`, stats);
+                    if (stats.wins > maxWins) {
+                        maxWins = stats.wins;
+                        mvpName = username;
+                    }
+                });
+                
+                console.log(`找到的MVP是: ${mvpName}, 胜场: ${maxWins}`);
+
+                // 如果没有胜场记录或找不到MVP，使用当前用户作为默认
+                if (maxWins === 0 || mvpName === '') {
+                    mvpName = currentUser.username;
+                    console.log('没有胜场记录，使用当前用户作为MVP:', mvpName);
+                    showMessage("本届比赛没有记录任何胜场，默认主办方为MVP");
+                    
+                    // 即使没有比赛记录，也显示庆祝效果
+                    createFireworks();
+                    showMVPAnnouncement(mvpName);
+                    
+                    return Promise.resolve();
+                }
+
+                // 更新数据库中的MVP记录
+                try {
+                    await UserDB.init();
+                    
+                    // 获取MVP用户数据
+                    const mvpUser = await UserDB.getUser(mvpName);
+                    console.log('获取到的MVP用户数据:', mvpUser);
+                    
+                    if (mvpUser) {
+                        // 增加MVP次数
+                        mvpUser.mvpCount = (parseInt(mvpUser.mvpCount || 0) + 1).toString();
+                        console.log(`更新${mvpUser.username}的MVP次数为:`, mvpUser.mvpCount);
+                        
+                        try {
+                            // 使用UserDB.updateUser更新用户数据
+                            const result = await UserDB.updateUser(mvpUser);
+                            console.log(`${mvpUser.username} 的MVP记录已更新:`, result);
+                            
+                            // 如果是当前登录用户，更新currentUser变量
+                            if (mvpUser.username === currentUser.username) {
+                                currentUser = mvpUser;
+                            }
+                            
+                            // 开始庆祝
+                            createFireworks();
+                            showMVPAnnouncement(mvpName);
+                            showMessage(`恭喜 ${mvpName} 获得MVP！`);
+                            
+                            return Promise.resolve();
+                        } catch (error) {
+                            console.error('更新MVP记录失败:', error);
+                            showMessage(`恭喜 ${mvpName} 获得MVP！数据库更新失败`, true);
+                            
+                            // 即使失败也显示庆祝效果
+                            createFireworks();
+                            showMVPAnnouncement(mvpName);
+                            
+                            return Promise.resolve();
+                        }
+                    } else {
+                        console.error(`找不到MVP用户: ${mvpName}`);
+                        showMessage(`找不到用户 ${mvpName}，但仍为其颁发MVP`, true);
+                        
+                        // 仍然显示庆祝效果
+                        createFireworks();
+                        showMVPAnnouncement(mvpName);
+                        return Promise.resolve();
+                    }
+                } catch (error) {
+                    console.error('MVP处理异常:', error);
+                    showMessage('MVP处理出错，但仍显示庆祝效果', true);
+                    
+                    // 即使出错也显示庆祝效果
+                    createFireworks();
+                    showMVPAnnouncement(mvpName);
+                    return Promise.resolve();
+                }
+            }
+            
+            // 设置元素为可拖拽
+            function setupDraggable(element) {
+                element.setAttribute('draggable', 'true');
+                element.classList.add('draggable');
+                
+                // 添加拖拽开始事件
+                element.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', e.target.textContent);
+                    e.target.classList.add('dragging');
+                    
+                    // 设置拖拽图像
+                    const dragImage = document.createElement('div');
+                    dragImage.textContent = e.target.textContent;
+                    dragImage.style.backgroundColor = 'rgba(141, 173, 230, 0.8)';
+                    dragImage.style.padding = '10px';
+                    dragImage.style.borderRadius = '8px';
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-1000px';
+                    document.body.appendChild(dragImage);
+                    e.dataTransfer.setDragImage(dragImage, 0, 0);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(dragImage);
+                    }, 0);
+                });
+                
+                // 拖拽结束事件
+                element.addEventListener('dragend', function(e) {
+                    e.target.classList.remove('dragging');
+                });
+            }
+            
+            // 创建烟花效果
+            function createFireworks() {
+                console.log('开始创建烟花效果');
+                // 清空之前的烟花
+                mvpContainer.innerHTML = '';
+                mvpContainer.classList.add('active');
+                
+                // 创建多个烟花
+                const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                
+                // 确保烟花容器可见
+                mvpContainer.style.display = 'block';
+                
+                // 创建50个烟花粒子，位置随机，颜色随机
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const firework = document.createElement('div');
+                        firework.classList.add('firework');
+                        
+                        // 随机位置
+                        const x = Math.random() * window.innerWidth;
+                        const y = Math.random() * window.innerHeight * 0.8;
+                        
+                        // 随机颜色
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        firework.style.left = `${x}px`;
+                        firework.style.top = `${y}px`;
+                        firework.style.backgroundColor = color;
+                        firework.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+                        
+                        mvpContainer.appendChild(firework);
+                        console.log(`创建了第${i+1}个烟花`);
+                        
+                        // 烟花爆炸后移除
+                        setTimeout(() => {
+                            firework.remove();
+                        }, 1000);
+                    }, i * 100); // 每隔100ms创建一个烟花，形成连续效果
+                }
+                
+                // 8秒后自动隐藏
+                setTimeout(() => {
+                    console.log('8秒后隐藏烟花和MVP公告');
+                    mvpContainer.classList.remove('active');
+                    mvpAnnouncement.classList.remove('active');
+                    mvpContainer.style.display = 'none';
+                }, 8000);
+            }
+            
+            // 显示MVP公告
+            function showMVPAnnouncement(mvpName) {
+                console.log('显示MVP公告，MVP是:', mvpName);
+                mvpAnnouncement.textContent = `恭喜 ${mvpName} 获得本届比赛MVP!`;
+                mvpAnnouncement.style.display = 'block';
+                mvpAnnouncement.classList.add('active');
+            }
+            
+            // 设置位置框为放置区域
+            positionBoxes.forEach(box => {
+                // 为每个位置框添加标识
+                if (!box.getAttribute('data-position')) {
+                    box.setAttribute('data-position', box.textContent);
+                }
+                
+                // 当拖拽物体进入目标区域
+                box.addEventListener('dragenter', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                // 当拖拽物体在目标区域上方移动
+                box.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                });
+                
+                // 当拖拽物体离开目标区域
+                box.addEventListener('dragleave', function(e) {
+                    this.classList.remove('drag-over');
+                });
+                
+                // 当拖拽物体放置在目标区域
+                box.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    // 获取拖拽的用户名
+                    const username = e.dataTransfer.getData('text/plain');
+                    
+                    // 获取当前位置的标识
+                    const positionId = this.getAttribute('data-position');
+                    
+                    // 检查该位置是否已有其他玩家
+                    if (this.textContent !== positionId && this.textContent !== username) {
+                        showMessage(`${positionId}已有其他玩家，请选择其他位置`, true);
+                        return;
+                    }
+                    
+                    // 检查该玩家是否已在其他位置
+                    const previousPosition = playerPositions.get(username);
+                    if (previousPosition) {
+                        // 查找玩家当前所在的位置框并恢复原始文本
+                        positionBoxes.forEach(posBox => {
+                            if (posBox.textContent === username && posBox !== this) {
+                                posBox.textContent = posBox.getAttribute('data-position');
+                            }
+                        });
+                    }
+                    
+                    // 保存原始的位置文本以显示消息
+                    const originalPositionText = this.textContent;
+                    
+                    // 将用户名放置到新位置框
+                    this.textContent = username;
+                    
+                    // 更新玩家位置映射
+                    playerPositions.set(username, positionId);
+                    
+                    // 显示成功消息
+                    showMessage(`已将 ${username} 分配到 ${originalPositionText}`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
