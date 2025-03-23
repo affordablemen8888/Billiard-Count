@@ -479,7 +479,7 @@
             </div>
         </div>
         
-        <!-- 设计说明 -->
+        <!-- 设计说明
         <div class="design-notes">
             <h2>移动端登录页面设计说明</h2>
             
@@ -522,7 +522,7 @@
             
             <h3>响应性设计</h3>
             <p>虽然这是一个移动端原型，但设计也考虑了在各种屏幕尺寸下的显示效果。所有元素都使用了相对单位，确保在不同设备上保持良好的显示效果。</p>
-        </div>
+        </div> -->
     </div>
     
     <div class="tooltip" id="tooltip"></div>
@@ -668,10 +668,10 @@
                             // 登录成功
                             showMessage('登录成功，欢迎回来！');
                             
-                            // 重置表单
+                            // 延迟后跳转到仪表盘页面
                             setTimeout(() => {
-                                loginForm.reset();
-                            }, 2000);
+                                window.location.href = 'dashboard.html';
+                            }, 1500);
                         } else {
                             // 登录失败
                             showMessage(result.message, true);
